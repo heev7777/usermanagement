@@ -2,6 +2,7 @@ package com.example.usermanagement.services;
 
 import com.example.usermanagement.models.Reservation;
 import com.example.usermanagement.repositories.ReservationRepository;
+import com.example.usermanagement.models.ReservationStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;
