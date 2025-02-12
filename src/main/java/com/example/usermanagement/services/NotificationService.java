@@ -57,5 +57,4 @@ public class NotificationService {
     public Notification saveNotification(Notification notification) {
         return notificationRepository.save(notification);
     }
-
 }

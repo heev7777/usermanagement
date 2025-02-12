@@ -1,13 +1,12 @@
 package com.example.usermanagement.services;
 
-import com.example.usermanagement.models.Payment;
-import com.example.usermanagement.models.Reservation;
-import com.example.usermanagement.models.ReservationStatus;
+import com.example.usermanagement.models.*;
 import com.example.usermanagement.repositories.PaymentRepository;
 import com.example.usermanagement.repositories.ReservationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -17,6 +16,7 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     /** Repository for handling Reservation entity database operations */
     private final ReservationRepository reservationRepository;
+    private final NotificationService notificationService;  // Inject NotificationService
 
     /**
      * Constructor-based dependency injection for PaymentService
@@ -25,9 +25,10 @@ public class PaymentService {
      * @param reservationRepository the repository handling reservation operations
      */
     @Autowired
-    public PaymentService(PaymentRepository paymentRepository, ReservationRepository reservationRepository) {
+    public PaymentService(PaymentRepository paymentRepository, ReservationRepository reservationRepository, NotificationService notificationService) {
         this.paymentRepository = paymentRepository;
         this.reservationRepository = reservationRepository;
+        this.notificationService = notificationService;
     }
 
     /**
@@ -50,6 +51,16 @@ public class PaymentService {
 
         reservation.setStatus(ReservationStatus.PAID);
         reservationRepository.save(reservation);
+
+        // Create a notification
+        Notification notification = new Notification(
+                "Payment of $" + amount + " received for Reservation ID " + reservationId,
+                NotificationType.PAYMENT_REGISTERED
+        );
+
+        // Save the notification
+        notification.setDate(LocalDateTime.now());
+        notificationService.saveNotification(notification);
 
         return payment;
     }
