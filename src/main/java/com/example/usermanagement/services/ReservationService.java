@@ -1,5 +1,7 @@
 package com.example.usermanagement.services;
 
+import com.example.usermanagement.models.Notification;
+import com.example.usermanagement.models.NotificationType;
 import com.example.usermanagement.models.Reservation;
 import com.example.usermanagement.models.ReservationStatus;
 import com.example.usermanagement.models.Room;
@@ -10,64 +12,73 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
-/**
- * Service for handling reservation operations.
- */
 @Service
 public class ReservationService {
+
     private final ReservationRepository reservationRepository;
     private final RoomRepository roomRepository;
+    private final NotificationService notificationService;
 
     @Autowired
-    public ReservationService(ReservationRepository reservationRepository, RoomRepository roomRepository) {
+    public ReservationService(ReservationRepository reservationRepository, RoomRepository roomRepository, NotificationService notificationService) {
         this.reservationRepository = reservationRepository;
         this.roomRepository = roomRepository;
+        this.notificationService = notificationService;
     }
 
-    /**
-     * Adds a new reservation.
-     *
-     * @param reservation Reservation to add.
-     * @return Saved reservation.
-     */
     public Reservation addReservation(Reservation reservation) {
         Room room = reservation.getRoom();
         if (!roomRepository.existsById(room.getRoomId())) {
             roomRepository.save(room);
         }
-        return reservationRepository.save(reservation);
+        Reservation savedReservation = reservationRepository.save(reservation);
+
+        Notification notification = new Notification();
+        notification.setType(NotificationType.RESERVATION_CONFIRMED);
+        notification.setMessage("Reservation confirmed for room " + room.getRoomNumber());
+        notification.setDate(LocalDateTime.now());
+        notificationService.saveNotification(notification);
+
+        return savedReservation;
     }
 
-    /**
-     * Retrieves all reservations.
-     *
-     * @return List of reservations.
-     */
     public List<Reservation> listReservations() {
         return reservationRepository.findAll();
     }
 
-    /**
-     * Cancels a reservation by ID.
-     *
-     * @param id Reservation ID.
-     * @return Response indicating success.
-     */
     public ResponseEntity<String> cancelReservation(Long id) {
         reservationRepository.deleteById(id);
+
+        Notification notification = new Notification();
+        notification.setType(NotificationType.RESERVATION_CONFIRMED);
+        notification.setMessage("Reservation with ID " + id + " has been canceled");
+        notification.setDate(LocalDateTime.now());
+        notificationService.saveNotification(notification);
+
         return ResponseEntity.ok("Reservation canceled");
     }
 
-    /**
-     * Checks availability of rooms within a date range.
-     *
-     * @param start Start date.
-     * @param end   End date.
-     * @return List of reservations.
-     */
     public List<Reservation> checkAvailability(LocalDate start, LocalDate end) {
         return reservationRepository.findByCheckInDateBetween(start, end);
+    }
+
+    public boolean verifyReservation(Long id) {
+        return reservationRepository.existsById(id);
+    }
+
+    public void updateReservationStatus(Long id, ReservationStatus status) {
+        Reservation reservation = reservationRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Reservation not found"));
+        reservation.setStatus(status);
+        reservationRepository.save(reservation);
+
+        Notification notification = new Notification();
+        notification.setType(NotificationType.RESERVATION_CONFIRMED);
+        notification.setMessage("Reservation status updated to " + status);
+        notification.setDate(LocalDateTime.now());
+        notificationService.saveNotification(notification);
     }
 }
