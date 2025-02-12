@@ -1,5 +1,6 @@
 package com.example.usermanagement.models;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import java.util.List;
 import java.util.UUID;
@@ -22,6 +23,7 @@ public class Room {
     private double pricePerNight;
 
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonBackReference
     private List<Reservation> reservations;
 
     public Room() {
