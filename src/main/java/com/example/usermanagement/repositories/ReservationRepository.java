@@ -7,4 +7,7 @@ import java.util.List;
 
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
     List<Reservation> findByCheckInDateBetween(LocalDate start, LocalDate end);
+
+    List<Reservation> findByRoomRoomIdAndCheckInDateLessThanEqualAndCheckOutDateGreaterThanEqual(
+            String roomId, LocalDate endDate, LocalDate startDate);
 }

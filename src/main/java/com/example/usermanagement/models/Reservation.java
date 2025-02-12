@@ -1,5 +1,6 @@
 package com.example.usermanagement.models;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
@@ -14,7 +15,12 @@ public class Reservation {
 
     @ManyToOne
     @JoinColumn(name = "customer_id", nullable = false)
+    @JsonBackReference
     private Customer customer;
+
+    @ManyToOne
+    @JoinColumn(name = "room_id", nullable = false)
+    private Room room;
 
     @NotNull(message = "Check-in date is required")
     @Future(message = "Check-in date must be in the future")
@@ -29,8 +35,9 @@ public class Reservation {
 
     public Reservation() {}
 
-    public Reservation(Customer customer, LocalDate checkInDate, LocalDate checkOutDate, ReservationStatus status) {
+    public Reservation(Customer customer, Room room, LocalDate checkInDate, LocalDate checkOutDate, ReservationStatus status) {
         this.customer = customer;
+        this.room = room;
         this.checkInDate = checkInDate;
         this.checkOutDate = checkOutDate;
         this.status = status;
@@ -50,6 +57,14 @@ public class Reservation {
 
     public void setCustomer(Customer customer) {
         this.customer = customer;
+    }
+
+    public Room getRoom() {
+        return room;
+    }
+
+    public void setRoom(Room room) {
+        this.room = room;
     }
 
     public LocalDate getCheckInDate() {
@@ -81,6 +96,7 @@ public class Reservation {
         return "Reservation{" +
                 "id=" + id +
                 ", customer=" + customer +
+                ", room=" + room +
                 ", checkInDate=" + checkInDate +
                 ", checkOutDate=" + checkOutDate +
                 ", status=" + status +

@@ -27,7 +27,7 @@ public class RoomAvailabilityService {
     @Transactional(readOnly = true)
     public boolean isRoomAvailable(String roomId, LocalDate startDate, LocalDate endDate) {
         List<Reservation> overlappingReservations =
-                reservationRepository.findByRoomRoomIdAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+                reservationRepository.findByRoomRoomIdAndCheckInDateLessThanEqualAndCheckOutDateGreaterThanEqual(
                         roomId, endDate, startDate);
         return overlappingReservations.isEmpty();
     }

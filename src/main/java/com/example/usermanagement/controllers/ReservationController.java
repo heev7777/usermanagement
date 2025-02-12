@@ -3,7 +3,6 @@ package com.example.usermanagement.controllers;
 import com.example.usermanagement.models.Reservation;
 import com.example.usermanagement.services.ReservationService;
 import com.example.usermanagement.dto.ReservationStatusUpdateRequest;
-import com.example.usermanagement.models.ReservationStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;

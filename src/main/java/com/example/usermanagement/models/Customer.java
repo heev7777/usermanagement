@@ -1,7 +1,10 @@
 package com.example.usermanagement.models;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+
+import java.util.List;
 
 @Entity
 @Table(name = "customer")
@@ -12,6 +15,10 @@ public class Customer {
 
     @NotBlank(message = "Customer name is required")
     private String name;
+
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<Reservation> reservations;
 
     public Customer() {}
 
