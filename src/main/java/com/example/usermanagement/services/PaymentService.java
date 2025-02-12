@@ -23,10 +23,17 @@ public class PaymentService {
     }
 
     public boolean checkPaymentStatus(Long reservationId) {
-        return repository.findByReservationId(reservationId).stream().anyMatch(Payment::isPaid);
+        return repository.findAll()
+                .stream()
+                .filter(payment -> payment.getReservationId().equals(reservationId))
+                .anyMatch(Payment::isPaid);
     }
 
     public Double calculateTotalAmount(Long reservationId) {
-        return repository.findByReservationId(reservationId).stream().mapToDouble(Payment::getAmount).sum();
+        return repository.findAll()
+                .stream()
+                .filter(payment -> payment.getReservationId().equals(reservationId))
+                .mapToDouble(Payment::getAmount)
+                .sum();
     }
 }
