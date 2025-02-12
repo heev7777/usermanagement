@@ -6,6 +6,9 @@ import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 
+/**
+ * Entity representing a reservation.
+ */
 @Entity
 @Table(name = "reservation")
 public class Reservation {
@@ -33,8 +36,20 @@ public class Reservation {
     @Enumerated(EnumType.STRING)
     private ReservationStatus status = ReservationStatus.PENDING;
 
+    /**
+     * Default constructor.
+     */
     public Reservation() {}
 
+    /**
+     * Constructor with parameters.
+     *
+     * @param customer    Customer making the reservation.
+     * @param room        Room being reserved.
+     * @param checkInDate Check-in date.
+     * @param checkOutDate Check-out date.
+     * @param status      Reservation status.
+     */
     public Reservation(Customer customer, Room room, LocalDate checkInDate, LocalDate checkOutDate, ReservationStatus status) {
         this.customer = customer;
         this.room = room;
@@ -42,6 +57,7 @@ public class Reservation {
         this.checkOutDate = checkOutDate;
         this.status = status;
     }
+
 
     public Long getId() {
         return id;

@@ -6,9 +6,13 @@ import jakarta.validation.constraints.NotBlank;
 
 import java.util.List;
 
+/**
+ * Entity representing a Customer.
+ */
 @Entity
 @Table(name = "customer")
 public class Customer {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
