@@ -21,8 +21,9 @@ public class PaymentService {
     /**
      * Constructor-based dependency injection for PaymentService
      *
-     * @param paymentRepository the repository handling payment operations
-     * @param reservationRepository the repository handling reservation operations
+     * @param paymentRepository       the repository responsible for handling payment operations
+     * @param reservationRepository   the repository responsible for managing reservation operations
+     * @param notificationService     the service responsible for sending notifications related to payments
      */
     @Autowired
     public PaymentService(PaymentRepository paymentRepository, ReservationRepository reservationRepository, NotificationService notificationService) {
@@ -34,8 +35,10 @@ public class PaymentService {
     /**
      * Registers a payment for a given reservation
      *
-     * If the reservation exists, a new payment is created,
-     * and the reservation status is updated to PAID
+     * This method processes a payment by adding it to the system, calculating the total amount paid
+     * so far, and updating the reservation status accordingly. If the total paid amount is equal to
+     * or greater than the total reservation cost, the status is updated to PAID; otherwise,
+     * it remains PENDING. A notification is also generated to inform about the payment
      *
      * @param reservationId the id of the reservation for which the payment is made
      * @param amount the amount paid for the reservation
@@ -46,23 +49,49 @@ public class PaymentService {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new IllegalArgumentException("Reservation not found"));
 
+        // Save new payment
         Payment payment = new Payment(reservationId, amount, true);
         paymentRepository.save(payment);
 
-        reservation.setStatus(ReservationStatus.PAID);
+        // Calculate total amount paid so far
+        double totalPaid = calculateTotalAmount(reservationId);
+
+        // Calculate total cost of reservation
+        double totalCost = calculateReservationCost(reservation);
+
+        // Update reservation status only if fully paid
+        if (totalPaid >= totalCost) {
+            reservation.setStatus(ReservationStatus.PAID);
+        } else {
+            reservation.setStatus(ReservationStatus.PENDING);
+        }
         reservationRepository.save(reservation);
 
         // Create a notification
-        Notification notification = new Notification(
-                "Payment of $" + amount + " received for Reservation ID " + reservationId,
-                NotificationType.PAYMENT_REGISTERED
-        );
+        String message = (totalPaid >= totalCost)
+                ? "Full payment of $" + totalPaid + " received for Reservation ID " + reservationId
+                : "Partial payment of $" + amount + " received for Reservation ID " + reservationId +
+                ". Total paid: $" + totalPaid + ", remaining: $" + (totalCost - totalPaid);
 
-        // Save the notification
+        Notification notification = new Notification(message, NotificationType.PAYMENT_REGISTERED);
         notification.setDate(LocalDateTime.now());
         notificationService.saveNotification(notification);
 
         return payment;
+    }
+
+    /**
+     * Calculates the total cost of a reservation
+     *
+     * The total cost is computed based on the number of nights the reservation spans
+     * and the price per night of the assigned room
+     *
+     * @param reservation the Reservation object whose cost needs to be calculated
+     * @return the total cost of the reservation
+     */
+    private double calculateReservationCost(Reservation reservation) {
+        long nights = java.time.temporal.ChronoUnit.DAYS.between(reservation.getCheckInDate(), reservation.getCheckOutDate());
+        return reservation.getRoom().getPricePerNight() * nights;
     }
 
     /**
